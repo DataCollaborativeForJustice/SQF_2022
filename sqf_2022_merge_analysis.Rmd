@@ -1,0 +1,519 @@
+---
+title: "sqf_2022"
+author: "Stephen Koppel"
+date: "2023-03-22"
+output: html_document
+---
+
+```{r}
+
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(ggthemes)
+library(scales)
+library(ggrepel)
+
+```
+
+Data pulled from NYPD's SQF open portal: https://www.nyc.gov/site/nypd/stats/reports-analysis/stopfrisk.page
+
+---Merge/clean
+
+```{r}
+
+sqf_2013 <- read_csv("C:/R Projects/Police Reform/SQF/sqf_2013.csv") 
+
+  
+sqf_2013 <- sqf_2013 %>% 
+  mutate(hit = if_else(arstmade == "Y"| sumissue == "Y", "Y", "N")) %>% 
+  mutate(arrest_hit = if_else(arstmade == "Y", "Y","N")) %>% 
+  mutate(datestop = mdy(datestop)) %>% 
+  select(date = datestop, sex, age, race, boro = city, crimsusp, frisked, searched, hit, arrest_hit, pct) 
+
+sqf_2013 <- sqf_2013 %>% 
+  mutate(age = as.integer(age)) %>% 
+  mutate(date = as.Date(date)) %>% 
+  mutate(pct = as.integer(pct))
+
+```
+
+
+
+```{r}
+
+sqf_2014 <- read_csv("C:/R Projects/Police Reform/SQF/sqf_2014.csv") 
+
+sqf_2014 <- sqf_2014 %>% 
+  mutate(hit = if_else(arstmade == "Y"| sumissue == "Y", "Y", "N")) %>% 
+  mutate(arrest_hit = if_else(arstmade == "Y", "Y","N")) %>% 
+  mutate(datestop = mdy(datestop)) %>% 
+  select(date = datestop, sex, age, race, boro = city, crimsusp, frisked, searched, hit, arrest_hit, pct) 
+
+sqf_2014 <- sqf_2014 %>% 
+  mutate(age = as.integer(age)) %>% 
+  mutate(date = as.Date(date)) %>% 
+  mutate(pct = as.integer(pct))
+
+
+```
+
+```{r}
+
+sqf_2015 <- read_csv("C:/R Projects/Police Reform/SQF/sqf_2015.csv") 
+  
+sqf_2015 <- sqf_2015 %>% 
+  mutate(hit = if_else(arstmade == "Y"| sumissue == "Y", "Y", "N")) %>% 
+  mutate(arrest_hit = if_else(arstmade == "Y", "Y","N")) %>% 
+  mutate(datestop = mdy(datestop)) %>% 
+  select(date = datestop, sex, age, race, boro = city, crimsusp, frisked, searched, hit, arrest_hit, pct)
+
+sqf_2015 %>% 
+  mutate(date = as.Date(date)) %>% 
+  mutate(pct = as.integer(pct))
+
+
+```
+
+```{r}
+
+sqf_2016 <- read_csv("C:/R Projects/Police Reform/SQF/sqf_2016.csv") 
+
+sqf_2016 <- sqf_2016 %>% 
+  mutate(hit = if_else(arstmade == "Y"| sumissue == "Y", "Y", "N")) %>% 
+  mutate(arrest_hit = if_else(arstmade == "Y", "Y","N")) %>% 
+  mutate(datestop = mdy(datestop)) %>% 
+  select(date = datestop, sex, age, race, boro = city, crimsusp, frisked, searched, hit, arrest_hit, pct)
+
+sqf_2016 <-  sqf_2016 %>% 
+  mutate(age = as.integer(age)) %>% 
+  mutate(date = as.Date(date)) %>% 
+  mutate(pct = as.integer(pct))
+
+```
+
+
+```{r}
+
+sqf_2017 <- read_csv("C:/R Projects/Police Reform/SQF/sqf_2017.csv") 
+
+
+sqf_2017 <- sqf_2017 %>% 
+  clean_names() %>% 
+  mutate(hit = if_else(suspect_arrested_flag == "Y"| summons_issued_flag == "Y", "Y", "N")) %>% 
+  mutate(arrest_hit = if_else(suspect_arrested_flag == "Y", "Y", "N")) %>% 
+  select(date = stop_frisk_date, sex = suspect_sex, age = suspect_reported_age, race = suspect_race_description, boro = stop_location_boro_name, crimsusp = suspected_crime_description, frisked = frisked_flag, searched = searched_flag, hit, arrest_hit, pct = stop_location_precinct) 
+
+sqf_2017 <- sqf_2017 %>% 
+  mutate(age = as.integer(age)) %>% 
+  mutate(pct = as.integer(pct))
+
+
+```
+
+```{r}
+
+sqf_2018 <- read_csv("C:/R Projects/Police Reform/SQF/sqf_2018.csv") 
+
+sqf_2018 <- sqf_2018 %>% 
+  clean_names() %>% 
+  mutate(hit = if_else(suspect_arrested_flag == "Y"| summons_issued_flag == "Y", "Y", "N")) %>%
+  mutate(arrest_hit = if_else(suspect_arrested_flag == "Y", "Y", "N")) %>% 
+  select(date = stop_frisk_date, sex = suspect_sex, age = suspect_reported_age, race = suspect_race_description, boro = stop_location_boro_name, crimsusp = suspected_crime_description, frisked = frisked_flag, searched = searched_flag, hit, arrest_hit, pct = stop_location_precinct)
+
+sqf_2018 <- sqf_2018 %>% 
+  mutate(age = as.integer(age)) %>% 
+  mutate(date = as.Date(date, format="%m/%d/%Y")) %>% 
+  mutate(date = as.Date(date, format = "%Y/%m/%d")) %>% 
+  mutate(pct = as.integer(pct))
+
+```
+
+```{r}
+
+sqf_2019 <- read_csv("C:/R Projects/Police Reform/SQF/sqf_2019.csv") 
+
+sqf_2019 <- sqf_2019 %>% 
+  clean_names() %>% 
+  mutate(hit = if_else(suspect_arrested_flag == "Y"| summons_issued_flag == "Y", "Y", "N")) %>% 
+  mutate(arrest_hit = if_else(suspect_arrested_flag == "Y", "Y", "N")) %>% 
+  select(date = stop_frisk_date, sex = suspect_sex, age = suspect_reported_age, race = suspect_race_description, boro = stop_location_boro_name, crimsusp = suspected_crime_description, frisked = frisked_flag, searched = searched_flag, hit, arrest_hit, pct = stop_location_precinct)
+
+sqf_2019 <- sqf_2019 %>% 
+  mutate(age = as.integer(age)) %>% 
+  mutate(date = as.Date(date, format="%m/%d/%Y")) %>% 
+  mutate(date = as.Date(date, format = "%Y/%m/%d")) %>% 
+  mutate(pct = as.integer(pct))
+
+```
+
+```{r}
+
+sqf_2020 <- read_csv("C:/R Projects/Police Reform/SQF/sqf_2020.csv") 
+
+sqf_2020 <- sqf_2020 %>% 
+  clean_names() %>% 
+  mutate(hit = if_else(suspect_arrested_flag == "Y"| summons_issued_flag == "Y", "Y", "N")) %>% 
+  mutate(arrest_hit = if_else(suspect_arrested_flag == "Y", "Y", "N")) %>% 
+  select(date = stop_frisk_date, sex = suspect_sex, age = suspect_reported_age, race = suspect_race_description, boro = stop_location_boro_name, crimsusp = suspected_crime_description, frisked = frisked_flag, searched = searched_flag, hit, arrest_hit, pct = stop_location_precinct)
+
+sqf_2020 <- sqf_2020 %>% 
+  mutate(date = as.Date(date, format="%m/%d/%Y")) %>% 
+  mutate(date = as.Date(date, format = "%Y/%m/%d")) %>% 
+  mutate(pct = as.integer(pct))
+
+
+```
+
+```{r}
+
+sqf_2021 <- read_csv("C:/R Projects/Police Reform/SQF/sqf_2021.csv") 
+
+sqf_2021 <- sqf_2021 %>% 
+  clean_names() %>% 
+  mutate(hit = if_else(suspect_arrested_flag == "Y"| summons_issued_flag == "Y", "Y", "N")) %>% 
+  mutate(arrest_hit = if_else(suspect_arrested_flag == "Y", "Y", "N")) %>% 
+  select(date = stop_frisk_date, sex = suspect_sex, age = suspect_reported_age, race = suspect_race_description, boro = stop_location_boro_name, crimsusp = suspected_crime_description, frisked = frisked_flag, searched = searched_flag, hit, arrest_hit, pct = stop_location_precinct)
+
+sqf_2021 <- sqf_2021 %>% 
+  mutate(age = as.integer(age)) %>% 
+  mutate(date = as.Date(date)) %>% 
+  mutate(pct = as.integer(pct))
+
+```
+
+```{r}
+
+sqf_2022 <- read_csv("C:/R Projects/Police Reform/SQF/sqf_2022.csv") 
+
+sqf_2022 <- sqf_2022 %>% 
+  clean_names() %>% 
+  mutate(hit = if_else(suspect_arrested_flag == "Y"| summons_issued_flag == "Y", "Y", "N")) %>% 
+  mutate(arrest_hit = if_else(suspect_arrested_flag == "Y", "Y", "N")) %>% 
+  select(date = stop_frisk_date, sex = suspect_sex, age = suspect_reported_age, race = suspect_race_description, boro = stop_location_boro_name, crimsusp = suspected_crime_description, frisked = frisked_flag, searched = searched_flag, hit, arrest_hit, pct = stop_location_precinct)
+
+sqf_2022 <- sqf_2022 %>% 
+  mutate(age = as.integer(age)) %>% 
+  mutate(date = as.Date(date, format="%m/%d/%Y")) %>% 
+  mutate(date = as.Date(date, format = "%Y/%m/%d")) %>% 
+  mutate(pct = as.integer(pct))
+
+```
+
+
+
+```{r}
+
+full_sqf <- bind_rows(sqf_2013, sqf_2014, sqf_2015, sqf_2016, sqf_2017, sqf_2018, sqf_2019, sqf_2020, sqf_2021, sqf_2022)
+
+
+
+```
+
+
+
+```{r}
+
+full_sqf <- full_sqf %>% 
+  mutate(year = year(date))
+
+```
+
+
+---Analysis of all stops
+
+
+
+```{r}
+full_sqf %>% 
+  count(year) %>% 
+  ggplot(aes(year, n)) +
+  geom_line(color = "#2CAAE2", size = 1) +
+  geom_point(size = 3, color = "#233267") +
+  theme_wsj (title_family = "Times New Roman") +
+  theme(axis.text.x=element_text(size=12, face = "bold"), axis.text.y=element_text(size=12, face = "bold"), legend.background = element_rect(fill = "white"), legend.key = element_rect(fill = "white"), legend.position = "top", plot.background = element_rect(fill = "white"), panel.background = element_rect(fill = "white"), axis.ticks.x = element_blank(), plot.title = element_text(size = 12)) + 
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(breaks = 2013:2022) +
+  labs(y = '', x = '', color = '') + 
+    annotate("rect", fill = "#233267", alpha = 0.4, 
+        xmin = 2012.5, xmax = 2013.67,
+        ymin = -Inf, ymax = Inf) + 
+    annotate("rect", fill = "gray", alpha = 0.4, 
+        xmin = 2013.67, xmax = 2021.67,
+        ymin = -Inf, ymax = Inf) +
+    annotate("rect", fill = "#2CAAE2", alpha = 0.4, 
+        xmin = 2021.67, xmax = 2022.67,
+        ymin = -Inf, ymax = Inf) +
+  expand_limits(y = 203000)
+
+ggsave("1_all_stops.tiff", width = 7, height = 4.5)
+
+```
+
+
+```{r}
+
+full_sqf %>% 
+  filter(year > 2020) %>% 
+  count(year) %>% 
+  ggplot(aes(year, n)) +
+  geom_col(fill = c("#233267", "#2CAAE2")) +
+  geom_text(aes(label = scales::comma(n)), vjust = 1.5, colour = "white", size = 5, fontface = "bold") +
+  theme_wsj (title_family = "Times New Roman") +
+  theme(legend.position = "none", axis.text.x=element_text(size=12, face = "bold"), axis.text.y=element_text(size=12, face = "bold"), plot.background = element_rect(fill = "white"), panel.background = element_rect(fill = "white"), axis.ticks.x = element_blank(), plot.title = element_text(size = 12)) +
+  theme(plot.background = element_rect(fill = "white"), panel.background = element_rect(fill = "white"), axis.ticks.x = element_blank(), plot.title = element_text(size = 15, face = "bold"), axis.text.x=element_text(size=12, face = "bold"), axis.text.y=element_text(size=12, face = "bold")) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(breaks = 2021:2022) +
+   labs(y = '', x = '', color = '') 
+
+
+ggsave("2_all_stops_yoy.tiff", width = 7, height = 4.5)
+
+```
+
+```{r}
+
+full_sqf %>% 
+  filter(year > 2020) %>% 
+    mutate(boro = case_when(boro %in% c("STATEN ISLAND", "STATEN IS") ~ "Staten Island",
+                        boro == "MANHATTAN" ~ "Manhattan",
+                        boro == "QUEENS" ~ "Queens",
+                        boro == "BRONX" ~ "Bronx",
+                        boro == "BROOKLYN" ~ "Brooklyn")) %>% 
+  filter(boro %in% c("Staten Island", "Manhattan", "Bronx", "Brooklyn", "Queens")) %>% 
+  count(year, boro) %>% 
+  ggplot(aes(year, n, color = boro)) +
+  geom_line(size = 1) +
+  geom_point(size = 3.5) +
+  theme_wsj (title_family = "Times New Roman") +
+  theme(legend.position = "none", axis.text.x=element_text(size=12, face = "bold"), axis.text.y=element_text(size=12, face = "bold"), plot.background = element_rect(fill = "white"), panel.background = element_rect(fill = "white"), axis.ticks.x = element_blank(), plot.title = element_text(size = 12)) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(breaks = 2021: 2022) +
+  labs(y = '', x = '', color = '') +
+   scale_colour_manual(values = c("#DB444B","#233267", "#2CAAE2", "gray", "#D1B07C")) 
+
+ggsave("3_all_stop_boro.tiff", width = 7, height = 4.5)
+
+```
+
+
+```{r}
+
+  full_sqf %>% 
+    mutate(hit_rate = case_when((arrest_hit == "Y") ~ "Arrest",
+                                (arrest_hit == "N" & hit == "Y") ~ "Summons only",
+                                (arrest_hit == "N" & hit == "N") ~ "No Arrest/Summons")) %>% 
+  group_by(year, hit_rate) %>% 
+  summarize(n = n()) %>% 
+  mutate(percent = n / sum(n) * 100) %>% 
+  mutate(percent = round(percent, 1)) %>% 
+   mutate(hit_rate = fct_reorder(hit_rate, percent)) %>% 
+  ggplot(aes(x = year, y = percent, fill = hit_rate)) +
+  geom_bar(stat = "identity", position = "fill", width = 0.94) +
+  geom_text(aes(label = paste0(percent, "%")), position = position_fill(vjust = 0.5), size = 4, color = "white", fontface = "bold") +
+  theme_classic() +
+  theme( axis.text.x=element_text(size=12, face = "bold"), legend.title= element_blank(), axis.text.y=element_blank(), legend.background = element_rect(fill = "white"), legend.key = element_rect(fill = "white"), legend.position = "none", plot.background = element_rect(fill = "white"), panel.background = element_rect(fill = "white"), axis.ticks.x = element_blank(), axis.ticks.y = element_blank(), plot.title = element_text(size = 15, face = "bold")) +
+  scale_x_continuous(breaks = 2013: 2022)  +
+    scale_fill_discrete(labels=c('No Arrest/Summons', 'Summons only', 'Arrest')) +
+  scale_fill_manual(values = c("#233267", "#2CAAE2", "gray")) +
+    labs(y = '', x = '', color = '') +
+   easy_remove_y_axis(what = "line")
+
+ggsave("4_hit.tiff", width = 7, height = 4.5)
+
+```
+
+
+```{r}
+
+top_pct <- full_sqf %>% 
+  count(year, pct) %>% 
+  filter(year == 2022) %>% 
+  slice_max(n, n =  10) %>% 
+  pull(pct)
+
+full_sqf %>% 
+    filter(year > 2020,
+         pct %in% top_pct) %>%
+  mutate(pct = case_when(pct == "14" ~ "14th-Manhattan",
+                         pct == "40" ~ "40th-Bronx",
+                         pct == "42" ~ "42nd-Bronx",
+                        pct == "43" ~ "43rd-Bronx",
+                        pct == "44" ~ "44th-Bronx",
+                        pct == "46" ~ "46th-Bronx",
+                        pct == "48" ~ "48th-Bronx",
+                        pct == "52" ~ "52nd-Bronx",
+                        pct == "73" ~ "73rd-Brooklyn",
+                        pct == "75" ~ "75th-Brooklyn")) %>% 
+  count(year, pct) %>% 
+  ggplot(aes(year, n, fill = factor(year))) +
+  geom_col(width = 0.94) +
+  facet_wrap(~pct, nrow = 2, scale = "free") +
+  geom_text(aes(label = scales::comma(n)), vjust = 1.5, colour = "white", size = 4, fontface = "bold") +
+  theme_classic() +
+  theme(axis.text.x=element_text(face = "bold"), axis.text.y=element_text(face = "bold"), legend.position = "none", axis.ticks.x=element_blank(), axis.ticks.y=element_blank()) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(breaks = 2021:2022) +
+  scale_fill_manual (values = c("#233267", "#2CAAE2"))+
+  labs(y = '', x = '', color = '') +
+   easy_remove_y_axis(what = "line")
+
+
+ggsave("5_precinct_all.tiff", width = 7, height = 4.5)
+
+```
+
+--- Analysis of weapons-related stops
+
+```{r}
+
+full_sqf %>% 
+ filter(str_detect(crimsusp, "CPW|265")) %>% 
+  count(year) %>% 
+  ggplot(aes(year, n)) +
+  geom_line(color = "#2CAAE2", size = 1) +
+  geom_point(size = 3, color = "#233267") +
+  theme_wsj (title_family = "Times New Roman") +
+  theme(axis.text.x=element_text(size=12, face = "bold"), axis.text.y=element_text(size=12, face = "bold"), legend.background = element_rect(fill = "white"), legend.key = element_rect(fill = "white"), legend.position = "top", plot.background = element_rect(fill = "white"), panel.background = element_rect(fill = "white"), axis.ticks.x = element_blank(), plot.title = element_text(size = 12)) + 
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(breaks = 2013:2022) +
+  labs(y = '', x = '', color = '') + 
+    annotate("rect", fill = "#233267", alpha = 0.4, 
+        xmin = 2012.5, xmax = 2013.67,
+        ymin = -Inf, ymax = Inf) + 
+    annotate("rect", fill = "gray", alpha = 0.4, 
+        xmin = 2013.67, xmax = 2021.67,
+        ymin = -Inf, ymax = Inf) +
+    annotate("rect", fill = "#2CAAE2", alpha = 0.4, 
+        xmin = 2021.67, xmax = 2022.67,
+        ymin = -Inf, ymax = Inf) +
+  expand_limits(y =24000)
+
+ggsave("6_weapon_all.tiff", width = 7, height = 4.5)
+
+
+```
+
+
+```{r}
+
+full_sqf %>% 
+   filter(str_detect(crimsusp, "CPW|265")) %>% 
+  filter(year > 2020) %>% 
+  count(year) %>% 
+  ggplot(aes(year, n)) +
+  geom_col(fill = c("#233267", "#2CAAE2")) +
+  geom_text(aes(label = scales::comma(n)), vjust = 1.5, colour = "white", size = 5, fontface = "bold") +
+  theme_wsj (title_family = "Times New Roman") +
+  theme(legend.position = "none", axis.text.x=element_text(size=12, face = "bold"), axis.text.y=element_text(size=12, face = "bold"), plot.background = element_rect(fill = "white"), panel.background = element_rect(fill = "white"), axis.ticks.x = element_blank(), plot.title = element_text(size = 12)) +
+  theme(plot.background = element_rect(fill = "white"), panel.background = element_rect(fill = "white"), axis.ticks.x = element_blank(), plot.title = element_text(size = 15, face = "bold"), axis.text.x=element_text(size=12, face = "bold"), axis.text.y=element_text(size=12, face = "bold")) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(breaks = 2021:2022) +
+   labs(y = '', x = '', color = '') 
+
+
+ggsave("7_weapon_yoy.tiff", width = 7, height = 4.5)
+```
+
+
+
+```{r}
+
+full_sqf %>% 
+  filter(str_detect(crimsusp, "CPW|265")) %>% 
+  filter(year > 2020) %>% 
+    mutate(boro = case_when(boro %in% c("STATEN ISLAND", "STATEN IS") ~ "Staten Island",
+                        boro == "MANHATTAN" ~ "Manhattan",
+                        boro == "QUEENS" ~ "Queens",
+                        boro == "BRONX" ~ "Bronx",
+                        boro == "BROOKLYN" ~ "Brooklyn")) %>% 
+  filter(boro %in% c("Staten Island", "Manhattan", "Bronx", "Brooklyn", "Queens")) %>% 
+  count(year, boro) %>% 
+  ggplot(aes(year, n, color = boro)) +
+  geom_line(size = 1) +
+  geom_point(size = 3.5) +
+  theme_wsj (title_family = "Times New Roman") +
+  theme(legend.position = "none", axis.text.x=element_text(size=12, face = "bold"), axis.text.y=element_text(size=12, face = "bold"), plot.background = element_rect(fill = "white"), panel.background = element_rect(fill = "white"), axis.ticks.x = element_blank(), plot.title = element_text(size = 12)) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(breaks = 2021: 2022) +
+  labs(y = '', x = '', color = '') +
+   scale_colour_manual(values = c("#DB444B","#233267", "#2CAAE2", "gray", "#D1B07C")) 
+
+ggsave("8_weapon_boro.tiff", width = 7, height = 4.5)
+
+```
+
+
+```{r}
+
+full_sqf %>% 
+  filter(str_detect(crimsusp, "CPW|265")) %>% 
+       mutate(hit_rate = case_when((arrest_hit == "Y") ~ "Arrest",
+                                (arrest_hit == "N" & hit == "Y") ~ "Summons only",
+                                (arrest_hit == "N" & hit == "N") ~ "No Arrest/Summons")) %>% 
+  group_by(year, hit_rate) %>% 
+  summarize(n = n()) %>% 
+  mutate(percent = n / sum(n) * 100) %>% 
+  mutate(percent = round(percent, 1)) %>% 
+   mutate(hit_rate = fct_reorder(hit_rate, percent)) %>% 
+  ggplot(aes(x = year, y = percent, fill = hit_rate)) +
+  geom_bar(stat = "identity", position = "fill", width = 0.94) +
+  geom_text(aes(label = paste0(percent, "%")), position = position_fill(vjust = 0.5), size = 4, color = "white", fontface = "bold") +
+  theme_classic() +
+  theme( axis.text.x=element_text(size=12, face = "bold"), legend.title= element_blank(), axis.text.y=element_blank(), legend.background = element_rect(fill = "white"), legend.key = element_rect(fill = "white"), legend.position = "none", plot.background = element_rect(fill = "white"), panel.background = element_rect(fill = "white"), axis.ticks.x = element_blank(), axis.ticks.y = element_blank(), plot.title = element_text(size = 15, face = "bold")) +
+  scale_x_continuous(breaks = 2013: 2022)  +
+    scale_fill_discrete(labels=c('No Arrest/Summons', 'Summons only', 'Arrest')) +
+  scale_fill_manual(values = c("#233267", "#2CAAE2", "gray")) +
+    labs(y = '', x = '', color = '') +
+   easy_remove_y_axis(what = "line")
+
+ggsave("9_weapon_hit.tiff", width = 7, height = 4.5)
+
+```
+
+
+
+
+```{r}
+
+
+top_pct_weapon <- full_sqf %>%
+  filter(str_detect(crimsusp, "CPW|265")) %>% 
+  count(year, pct) %>% 
+  filter(year == 2022) %>% 
+  slice_max(n, n =  10) %>% 
+  pull(pct)
+
+
+full_sqf %>% 
+  filter(str_detect(crimsusp, "CPW|265")) %>% 
+  filter(year > 2020,
+         pct %in% top_pct_weapon) %>%
+  mutate(pct = case_when(pct == "40" ~ "40th-Bronx",
+                         pct == "42" ~ "42nd-Bronx",
+                        pct == "43" ~ "43rd-Bronx",
+                        pct == "44" ~ "44th-Bronx",
+                        pct == "46" ~ "46th-Bronx",
+                        pct == "48" ~ "48th-Bronx",
+                        pct == "52" ~ "52nd-Bronx",
+                        pct == "67" ~ "67th-Brooklyn",
+                        pct == "73" ~ "73rd-Brooklyn",
+                        pct == "75" ~ "75th-Brooklyn")) %>% 
+  count(year, pct) %>% 
+  ggplot(aes(year, n, fill = factor(year))) +
+  geom_col(width = 0.94) +
+  facet_wrap(~pct, nrow = 2, scale = "free") +
+  geom_text(aes(label = scales::comma(n)), vjust = 1.5, colour = "white", size = 4, fontface = "bold") +
+  theme_classic() +
+  theme(axis.text.x=element_text(face = "bold"), axis.text.y=element_text(face = "bold"), legend.position = "none", axis.ticks.x=element_blank(), axis.ticks.y=element_blank()) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(breaks = 2021:2022) +
+  scale_fill_manual (values = c("#233267", "#2CAAE2"))+
+  labs(y = '', x = '', color = '') +
+   easy_remove_y_axis(what = "line")
+
+
+ggsave("10_precinct_weapon.tiff", , width = 7, height = 4.5)
+
+```
+
