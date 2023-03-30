@@ -8,12 +8,6 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
----
-title: "sqf_2022"
-author: "Stephen Koppel"
-date: "2023-03-22"
-output: html_document
----
 
 ```{r}
 
@@ -27,7 +21,7 @@ library(ggrepel)
 ```
 Pull 2013-2022 data from NYPD's website: https://www.nyc.gov/site/nypd/stats/reports-analysis/stopfrisk.page
 
----Merge/clean
+---Clean/merge
 
 ```{r}
 
